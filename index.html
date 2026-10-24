@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Terapéutico del Tío Nepomuceno</title>
+    <!-- jsPDF para exportar reportes clínicos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #12181b;
+            color: #dcdde1;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #1e272c;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            border: 1px solid #2f3640;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        .lang-box {
+            background: #2f3640;
+            border: 1px solid #00d2d3;
+            color: #f1f2f6;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        /* ESTILOS DEL GATITO ANIMADO */
+        .cat-avatar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .animated-cat {
+            width: 90px;
+            height: 90px;
+            animation: floatCat 3s ease-in-out infinite;
+        }
+        @keyframes floatCat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .cat-tail {
+            animation: tailWag 1.5s ease-in-out infinite alternate;
+            transform-origin: 55px 70px;
+        }
+        @keyframes tailWag {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(18deg); }
+        }
+        .cat-blink {
+            animation: blinkEyes 4s infinite;
+            transform-origin: center;
+        }
+        @keyframes blinkEyes {
+            0%, 96%, 100% { transform: scaleY(1); }
+            98% { transform: scaleY(0.1); }
+        }
+        .cat-heart {
+            animation: pulseHeart 1.2s infinite;
+            transform-origin: center;
+        }
+        @keyframes pulseHeart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        h1 { color: #00d2d3; text-align: center; margin-bottom: 5px; font-size: 1.8em; }
+        .subtitle { text-align: center; color: #718093; font-size: 0.95em; margin-bottom: 20px; }
+        .disclaimer {
+            background: #2f3542;
+            border-left: 5px solid #ffa502;
+            color: #f1f2f6;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            border-radius: 4px;
+        }
+        .music-banner {
+            background: #192a56;
+            border: 2px solid #00d2d3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .music-btn {
+            background: #00d2d3;
+            color: #12181b;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .music-btn:hover { background: #48dbfb; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #00d2d3; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #487eb0;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #2f3640;
+            color: #f1f2f6;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00d2d3;
+        }
+        button.action-btn {
+            background: #00b894;
+            color: #12181b;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        button.action-btn:hover { background: #55efc4; }
+        .result-card {
+            background: #2f3640;
+            border: 2px solid #00d2d3;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+            display: none;
+        }
+        .menu-box {
+            background: #1e272c;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #487eb0;
+            margin-top: 12px;
+            line-height: 1.6;
+            color: #f1f2f6;
+        }
+        .apa-container {
+            margin-top: 30px;
+            border: 1px solid #487eb0;
+            border-radius: 8px;
+            background: #1e272c;
+            overflow: hidden;
+        }
+        .apa-header {
+            background: #2f3640;
+            color: #00d2d3;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .apa-header:hover { background: #353b48; }
+        .apa-content {
+            padding: 15px;
+            display: none;
+            font-size: 0.88em;
+            line-height: 1.6;
+            background: #192227;
+            color: #a4b0be;
+        }
+        .apa-content strong { color: #f1f2f6; }
+    
+        
+        /* 1. Light Clean (Claro Minimalista) */
+        body.theme-light {
+            background-color: #f5f6fa !important;
+            color: #2f3640 !important;
+        }
+        body.theme-light .container {
+            background: #ffffff !important;
+            border-color: #dcdde1 !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+        }
+        body.theme-light h1, body.theme-light label, body.theme-light .apa-header, body.theme-light h3, body.theme-light h4 {
+            color: #0097e6 !important;
+        }
+        body.theme-light input, body.theme-light select, body.theme-light textarea {
+            background-color: #f1f2f6 !important;
+            border-color: #718093 !important;
+            color: #2f3640 !important;
+        }
+        body.theme-light .apa-content, body.theme-light .menu-box, body.theme-light div[style*="background: var(--input-bg)"], body.theme-light div[style*="background: #192227"] {
+            background: #f8f9fa !important;
+            color: #2f3640 !important;
+        }
+
+        /* 2. Mint Fresh (Menta Luminosa) */
+        body.theme-mint {
+            background-color: #e8f8f5 !important;
+            color: #117a65 !important;
+        }
+        body.theme-mint .container {
+            background: #ffffff !important;
+            border-color: #a3e4d7 !important;
+            box-shadow: 0 8px 24px rgba(26, 188, 156, 0.15) !important;
+        }
+        body.theme-mint h1, body.theme-mint label, body.theme-mint .apa-header, body.theme-mint h3, body.theme-mint h4 {
+            color: #16a085 !important;
+        }
+        body.theme-mint input, body.theme-mint select, body.theme-mint textarea {
+            background-color: #e8f8f5 !important;
+            border-color: #48c9b0 !important;
+            color: #0e6251 !important;
+        }
+
+        /* 3. Solar Warmth (Sol Radiante / Cálido) */
+        body.theme-solar {
+            background-color: #fef9e7 !important;
+            color: #7d6608 !important;
+        }
+        body.theme-solar .container {
+            background: #ffffff !important;
+            border-color: #f9e79f !important;
+            box-shadow: 0 8px 24px rgba(243, 156, 18, 0.15) !important;
+        }
+        body.theme-solar h1, body.theme-solar label, body.theme-solar .apa-header, body.theme-solar h3, body.theme-solar h4 {
+            color: #d4ac0d !important;
+        }
+        body.theme-solar input, body.theme-solar select, body.theme-solar textarea {
+            background-color: #fef9e7 !important;
+            border-color: #f4d03f !important;
+            color: #7d6608 !important;
+        }
+
+        /* 4. Sky Breeze (Brisa Celeste) */
+        body.theme-sky {
+            background-color: #ebf5fb !important;
+            color: #1b4f72 !important;
+        }
+        body.theme-sky .container {
+            background: #ffffff !important;
+            border-color: #aed6f1 !important;
+            box-shadow: 0 8px 24px rgba(52, 152, 219, 0.15) !important;
+        }
+        body.theme-sky h1, body.theme-sky label, body.theme-sky .apa-header, body.theme-sky h3, body.theme-sky h4 {
+            color: #2980b9 !important;
+        }
+        body.theme-sky input, body.theme-sky select, body.theme-sky textarea {
+            background-color: #ebf5fb !important;
+            border-color: #5dade2 !important;
+            color: #154360 !important;
+        }
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <!-- Selector de Paleta de Colores e Idioma -->
+    <div class="top-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="paletteSelect" id="lblPalette" style="margin: 0; color: #00d2d3; font-size: 0.9em;">🎨 Paleta:</label>
+            <select id="paletteSelect" class="lang-box" onchange="changePalette()">
+                <option value="" selected>Dark Cyber (Turquesa Oscuro)</option>
+                <option value="theme-light">Light Clean (Claro Minimalista)</option>
+                <option value="theme-mint">Mint Fresh (Menta Luminosa)</option>
+                <option value="theme-solar">Solar Warmth (Sol Radiante)</option>
+                <option value="theme-sky">Sky Breeze (Brisa Celeste)</option>
+            </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="langSelect" id="lblLang" style="margin: 0; color: #00d2d3; font-size: 0.9em;">Idioma:</label>
+            <select id="langSelect" class="lang-box" onchange="changeLanguage()">
+                <option value="es" selected>Español (predeterminado)</option>
+                <option value="en">Ingles</option>
+                <option value="de">Aleman</option>
+                <option value="ru">Ruso</option>
+                <option value="zh">Chino</option>
+                <option value="ja">Japones</option>
+                <option value="pt">Portugues</option>
+                <option value="fr">Frances</option>
+                <option value="it">Italiano</option>
+                <option value="pl">Polaco</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- GATITO ANIMADO SUPERIOR -->
+    <div class="cat-avatar-container">
+        <svg class="animated-cat" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path class="cat-tail" d="M 55 70 Q 75 75 80 50 Q 82 40 78 35" fill="none" stroke="#00d2d3" stroke-width="5" stroke-linecap="round"/>
+            <ellipse cx="50" cy="62" rx="22" ry="20" fill="#2f3640" stroke="#00d2d3" stroke-width="2.5"/>
+            <circle cx="50" cy="38" r="18" fill="#2f3640" stroke="#00d2d3" stroke-width="2.5"/>
+            <polygon points="35,26 38,10 47,23" fill="#2f3640" stroke="#00d2d3" stroke-width="2.5" stroke-linejoin="round"/>
+            <polygon points="38,22 40,14 44,21" fill="#ff4757" opacity="0.6"/>
+            <polygon points="65,26 62,10 53,23" fill="#2f3640" stroke="#00d2d3" stroke-width="2.5" stroke-linejoin="round"/>
+            <polygon points="62,22 60,14 56,21" fill="#ff4757" opacity="0.6"/>
+            <g class="cat-blink">
+                <circle cx="43" cy="36" r="2.5" fill="#55efc4"/>
+                <circle cx="57" cy="36" r="2.5" fill="#55efc4"/>
+            </g>
+            <ellipse cx="50" cy="43" rx="3" ry="2" fill="#ff7675"/>
+            <line x1="47" y1="44" x2="36" y2="46" stroke="#718093" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="47" y1="46" x2="35" y2="50" stroke="#718093" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="53" y1="44" x2="64" y2="46" stroke="#718093" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="53" y1="46" x2="65" y2="50" stroke="#718093" stroke-width="1.5" stroke-linecap="round"/>
+            <path class="cat-heart" d="M 50 78 C 50 75 44 68 39 73 C 35 77 41 83 50 89 C 59 83 65 77 61 73 C 56 68 50 75 50 78 Z" fill="#ff4757"/>
+        </svg>
+    </div>
+
+    <h1 id="mainTitle">🐱⚡ Simulador Terapéutico del Tío Nepomuceno</h1>
+    <div class="subtitle" id="mainSub">Modo Dark Cyber — Precisión Metabólica y Dietética Felina</div>
+    
+    <div class="disclaimer" id="disclaimerBox">
+        <strong>⚠️ Aviso Clínico:</strong> Herramienta avanzada de apoyo nutricional y simulación metabólica. No sustituye la valoración veterinaria presencial.
+    </div>
+
+    <!-- MÚSICA AMBIENTAL TENUE -->
+    <div class="music-banner">
+        <h3 id="musicTitle" style="color: #f1f2f6; margin: 0 0 8px 0;">🎶 Música Ambiental Tenue (Spa Felino Suave)</h3>
+        <p id="musicSub" style="font-size: 0.9em; margin: 0 0 10px 0; color: #dfe4ea;">Atmósfera sonora sutil, luminosa y relajante:</p>
+        <button class="music-btn" id="musicToggleBtn" type="button" onclick="toggleAmbientMusic()">▶️ Activar Música Ambiental</button>
+    </div>
+
+    <div>
+        <h2 id="sectionParamsTitle">Parámetros Clínicos y Metabólicos</h2>
+        <p id="sectionParamsSub">Configura los datos avanzados de tu felino para un cálculo de precisión científica:</p>
+
+        <div class="form-group">
+            <label id="lblCatName">Nombre del Gato:</label>
+            <input type="text" id="iName" value="Neo">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label id="lblYears">Edad (Años):</label>
+                <input type="number" id="iYears" min="0" value="3">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label id="lblMonths">Meses (0-11):</label>
+                <input type="number" id="iMonths" min="0" max="11" value="0">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label id="lblWeight">Peso Actual (kg):</label>
+                <input type="number" id="iWeight" step="0.1" min="0.5" max="15" value="4.5">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label id="lblActivity">Nivel de Actividad Física:</label>
+                <select id="iActivity">
+                    <option value="sedentary">Sedentario (Interior / Bajo gasto - Factor 30)</option>
+                    <option value="moderate" selected>Juguetón / Actividad Moderada (Factor 35)</option>
+                    <option value="active">Muy Activo / Alta Energía (Factor 40)</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label id="lblProtein">Proteína Base / Preferencia:</label>
+                <select id="iProtein">
+                    <option value="Pollo o Pavo" selected>Pollo o Pavo (Estándar Digestible)</option>
+                    <option value="Res o Cerdo Magro">Res o Cerdo Magro (Alta Densidad)</option>
+                    <option value="Pescado Blanco / Salmón">Pescado Blanco / Salmón (Soporte dérmico)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label id="lblSymptom">Condición Clínica / Objetivo Terapéutico:</label>
+            <select id="iSymptom">
+                <option value="sano">Gato Sano / Mantenimiento General</option>
+                <option value="diarrea">Diarrea / Sensibilidad Digestiva (Inflamación intestinal)</option>
+                <option value="pelaje">Pelaje Opaco / Piel Seca (Déficit de ácidos grasos)</option>
+                <option value="renal">Enfermedad Renal Crónica (ERC / Cuidado de riñones)</option>
+                <option value="urinario">Problemas Urinarios / FLUTD (Cistitis, prevención cristales)</option>
+                <option value="sobrepeso">Sobrepeso / Obesidad (Control calórico y saciedad)</option>
+                <option value="senior">Gato Senior Avanzado (Soporte articular y digestivo)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lblFruit">Fruta o Fitonutriente Seguro (Aporte hídrico y antioxidante - Máx 3-5%):</label>
+            <select id="iFruit">
+                <option value="sin">🚫 Sin fruta (Excluir vegetales)</option>
+                <option value="arandanos">Arándanos (Antioxidantes y tracto urinario)</option>
+                <option value="manzana">Manzana sin semillas (Pectina digestiva)</option>
+                <option value="sandia">Sandía en cubitos (Hidratación renal y urinaria)</option>
+                <option value="melon">Melón (Aporte vitamínico suave)</option>
+            </select>
+        </div>
+
+        <button class="action-btn" id="btnCalc" type="button" onclick="handleCalculateClick()">⚡ Calcular Simulación y Receta Avanzada</button>
+
+        <div id="resultCard" class="result-card">
+            <h3 id="resTitle" style="color: #00d2d3; margin-top: 0;"></h3>
+            <p id="resPredx"></p>
+            <p id="resPortion" style="font-weight: bold; color: #55efc4; font-size: 1.1em;"></p>
+            <p id="resWater" style="font-weight: bold; color: #74b9ff; font-size: 1em;"></p>
+            
+            <div class="menu-box">
+                <strong id="menuBoxTitle" style="color: #00d2d3;">🍲 Menú Terapéutico y Protocolo de Hidratación:</strong><br><br>
+                <span id="resMenu"></span>
+            </div>
+            
+            <div style="background: #192227; border: 2px dashed #00d2d3; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
+                <h4 id="exportTitle" style="color: #00d2d3; margin: 0 0 8px 0;">📥 Exportación Oficial</h4>
+                <button class="action-btn" id="btnDownload" type="button" style="background: #0984e3; color: #fff; margin-top:0; width: auto; padding: 10px 25px;" onclick="handleDownloadClick()">📥 Descargar Reporte Clínico en PDF</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- NUEVAS HERRAMIENTAS AVANZADAS: SUPLEMENTOS, HISTORIAL Y ALARMAS -->
+    <div style="margin-top: 25px; background: var(--bg-container); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+        <h3 style="color: var(--primary-color); margin-top: 0;">🔬 Módulo Avanzado: Suplementos Milimétricos y Control de Peso</h3>
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+            <div style="flex: 1; min-width: 250px; background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: var(--accent-green);">💊 Dosificación Exacta de Suplementos</h4>
+                <p id="suppDetailText" style="font-size: 0.9em; line-height: 1.5; color: var(--text-color);">
+                    Calculado según peso actual: Taurina (250mg/día), Carbonato de Calcio (cucharadita de precisión) y Aceite de Salmón (gotas exactas).
+                </p>
+                <div id="suppCalcResult" style="font-weight: bold; color: var(--primary-color); margin-top: 8px;"></div>
+            </div>
+
+            <div style="flex: 1; min-width: 250px; background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: var(--accent-blue);">⏰ Alarma y Temporizador de Comida</h4>
+                <p style="font-size: 0.9em; margin-bottom: 8px;">Programa el próximo horario de alimentación:</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="time" id="mealTimerInput" class="lang-box" style="flex: 1;">
+                    <button class="music-btn" type="button" onclick="setMealAlarm()" style="padding: 8px 12px; font-size: 0.9em;">🔔 Activar</button>
+                </div>
+                <div id="alarmStatus" style="font-size: 0.85em; color: var(--accent-green);"></div>
+            </div>
+        </div>
+
+        <div style="background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">📈 Historial de Evolución de Peso (Guardado Local)</h4>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                <input type="number" id="historyWeightInput" step="0.1" placeholder="Peso registrado (kg)" style="max-width: 180px; padding: 8px;">
+                <button class="music-btn" type="button" onclick="saveWeightHistory()" style="padding: 8px 15px; font-size: 0.9em;">➕ Guardar Registro</button>
+                <button class="music-btn" type="button" onclick="clearWeightHistory()" style="background: #ff4757; color: #fff; padding: 8px 15px; font-size: 0.9em;">🗑️ Limpiar Historial</button>
+            </div>
+            <div id="weightHistoryList" style="font-size: 0.9em; max-height: 100px; overflow-y: auto; background: var(--bg-body); padding: 8px; border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    
+    <!-- MÓDULOS MAESTROS v7: MULTI-GATO, TRANSICIÓN, COSTOS Y NOTAS CLÍNICAS -->
+    <div style="margin-top: 25px; background: var(--bg-container); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+        <h3 style="color: var(--primary-color); margin-top: 0;">🌟 Módulos Maestros de Responsabilidad Felina (v7)</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-top: 15px;">
+            
+            <!-- 1. Multi-Gato -->
+            <div style="background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: var(--accent-green);">🐱 Perfiles Multi-Gato</h4>
+                <p style="font-size: 0.88em; margin-bottom: 8px;">Guarda y cambia entre los perfiles de tus felinos:</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <button class="music-btn" type="button" onclick="saveCatProfile()" style="padding: 6px 10px; font-size: 0.85em; flex: 1;">💾 Guardar Perfil</button>
+                    <select id="profileSelect" class="lang-box" onchange="loadCatProfile()" style="flex: 1; padding: 6px;"></select>
+                </div>
+            </div>
+
+            <!-- 2. Costos y Presupuesto -->
+            <div style="background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: var(--accent-blue);">💰 Calculadora de Presupuesto</h4>
+                <p style="font-size: 0.88em; margin-bottom: 8px;">Costo aprox. de la carne por kilo ($):</p>
+                <input type="number" id="costPerKgInput" value="120" step="1" oninput="calculateMonthlyCost()" style="padding: 6px; font-size: 0.9em; margin-bottom: 6px;">
+                <div id="monthlyCostResult" style="font-size: 0.88em; font-weight: bold; color: var(--primary-color);">Gasto estimado: --</div>
+            </div>
+
+            <!-- 3. Control de Despensa -->
+            <div style="background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top: 0; color: #f39c12;">📦 Inventario de Despensa</h4>
+                <p style="font-size: 0.88em; margin-bottom: 8px;">Stock actual de proteína (kg):</p>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="pantryStockInput" placeholder="Ej. 2.5 kg" step="0.1" style="padding: 6px; font-size: 0.9em; flex: 1;">
+                    <button class="music-btn" type="button" onclick="updatePantry()" style="padding: 6px 10px; font-size: 0.85em;">Actualizar</button>
+                </div>
+                <div id="pantryStatus" style="font-size: 0.85em; color: var(--text-color); margin-top: 6px;">Stock registrado: Ninguno</div>
+            </div>
+
+        </div>
+
+        <!-- 4. Notas Clínicas del Veterinario -->
+        <div style="margin-top: 15px; background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">🩺 Notas Clínicas y Observaciones del Veterinario</h4>
+            <textarea id="vetNotesInput" placeholder="Escribe aquí las indicaciones específicas del médico veterinario (ej. restringir fósforo, suplemento extra, etc.)..." style="width: 100%; height: 70px; background: var(--bg-body); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; font-size: 0.9em; box-sizing: border-box;"></textarea>
+        </div>
+
+        <!-- 5. Planificador de Transición Gradual -->
+        <div style="margin-top: 15px; background: var(--input-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
+            <h4 style="margin-top: 0; color: #00d2d3;">🔄 Planificador de Transición Dietética Gradual (7 Días)</h4>
+            <p style="font-size: 0.88em; margin-bottom: 10px;">Evita problemas digestivos combinando la comida anterior con la nueva dieta natural:</p>
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 0.8em;">
+                <div style="background: var(--bg-body); padding: 6px; border-radius: 4px;"><strong>Día 1-2</strong><br>25% Natural<br>75% Anterior</div>
+                <div style="background: var(--bg-body); padding: 6px; border-radius: 4px;"><strong>Día 3-4</strong><br>50% Natural<br>50% Anterior</div>
+                <div style="background: var(--bg-body); padding: 6px; border-radius: 4px;"><strong>Día 5-6</strong><br>75% Natural<br>25% Anterior</div>
+                <div style="background: var(--bg-body); padding: 6px; border-radius: 4px; border: 1px solid var(--primary-color);"><strong>Día 7+</strong><br>100% Dieta Natural 🐾</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RECUADRO APA INTERACTIVO -->
+    <div class="apa-container">
+        <div class="apa-header" onclick="toggleApaContent()">
+            <span id="apaHeaderTxt">📚 Referencias Científicas Avanzadas (Formato APA) — Ver Respaldos Clínicos</span>
+            <span id="apaArrow">▼</span>
+        </div>
+        <div class="apa-content" id="apaContentBox">
+            <p id="apa1"><strong>1. Fundamentos de Nutrición y Requerimientos Energéticos (Factor de Actividad):</strong><br>Case, L. P., Daristotle, L., Hayek, M. G., & Raasch, M. F. (2011). <em>Canine and Feline Nutrition: A Resource for Companion Animal Professionals</em> (3rd ed.). Mosby Elsevier.</p>
+            <p id="apa2"><strong>2. Directrices de Hidratación y Manejo Renal (Cálculo de Agua Diaria):</strong><br>FEDIAF. (2021). <em>Nutritional Guidelines for Complete and Complementary Pet Food for Cats and Dogs</em>. European Pet Food Industry Federation.</p>
+            <p id="apa3"><strong>3. Perfil Aminoacídico y Selección de Proteínas (Proteína Base):</strong><br>National Research Council (NRC). (2006). <em>Nutrient Requirements of Dogs and Cats</em>. The National Academies Press.</p>
+            <p id="apa4"><strong>4. Fisiología Digestiva y Tolerancia a Fitonutrientes:</strong><br>Zoran, L. D. (2002). The carnivore connection to nutrition in cats. <em>Journal of the American Veterinary Medical Association</em>, 221(11), 1559-1562.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentSimulation = {};
+    let ambientCtx = null;
+    let ambientInterval = null;
+    let isMusicPlaying = false;
+
+    const dict = {
+        es: {
+            lblPalette: "🎨 Paleta:",
+            lblLang: "Idioma:",
+            mainTitle: "🐱⚡ Simulador Terapéutico del Tío Nepomuceno",
+            mainSub: "Modo Dark Cyber — Precisión Metabólica y Dietética Felina",
+            disclaimer: "⚠️ Aviso Clínico: Herramienta avanzada de apoyo nutricional y simulación metabólica. No sustituye la valoración veterinaria presencial.",
+            musicTitle: "🎶 Música Ambiental Tenue (Spa Felino Suave)",
+            musicSub: "Atmósfera sonora sutil, luminosa y relajante:",
+            btnMusicOn: "▶️ Activar Música Ambiental",
+            btnMusicOff: "⏸️ Pausar Música Ambiental",
+            secParamsTitle: "Parámetros Clínicos y Metabólicos",
+            secParamsSub: "Configura los datos avanzados de tu felino para un cálculo de precisión científica:",
+            lblCatName: "Nombre del Gato:",
+            lblYears: "Edad (Años):",
+            lblMonths: "Meses (0-11):",
+            lblWeight: "Peso Actual (kg):",
+            lblActivity: "Nivel de Actividad Física:",
+            lblProtein: "Proteína Base / Preferencia:",
+            lblSymptom: "Condición Clínica / Objetivo Terapéutico:",
+            lblFruit: "Fruta / Fitonutriente Seguro (Aporte hídrico y antioxidante - Máx 3-5%):",
+            btnCalc: "⚡ Calcular Simulación y Receta Avanzada",
+            menuBoxTitle: "🍲 Menú Terapéutico y Protocolo de Hidratación:",
+            exportTitle: "📥 Exportación Oficial",
+            btnDownload: "📥 Descargar Reporte Clínico en PDF",
+            apaHeader: "📚 Referencias Científicas Avanzadas (Formato APA) — Ver Respaldos Clínicos",
+            actOpts: ["Sedentario (Interior / Bajo gasto - Factor 30)", "Juguetón / Actividad Moderada (Factor 35)", "Muy Activo / Alta Energía (Factor 40)"],
+            protOpts: ["Pollo o Pavo (Estándar Digestible)", "Res o Cerdo Magro (Alta Densidad)", "Pescado Blanco / Salmón (Soporte dérmico)"],
+            symOpts: ["Gato Sano / Mantenimiento General", "Diarrea / Sensibilidad Digestiva (Inflamación intestinal)", "Pelaje Opaco / Piel Seca (Déficit de ácidos grasos)", "Enfermedad Renal Crónica (ERC / Cuidado de riñones)", "Problemas Urinarios / FLUTD (Cistitis, prevención cristales)", "Sobrepeso / Obesidad (Control calórico y saciedad)", "Gato Senior Avanzado (Soporte articular y digestivo)"],
+            fruitOpts: ["🚫 Sin fruta (Excluir vegetales)", "Arándanos (Antioxidantes y tracto urinario)", "Manzana sin semillas (Pectina digestiva)", "Sandía en cubitos (Hidratación renal y urinaria)", "Melón (Aporte vitamínico suave)"]
+        },
+        en: {
+            lblPalette: "🎨 Palette:",
+            lblLang: "Language:",
+            mainTitle: "🐱⚡ Uncle Nepomuceno's Therapeutic Simulator",
+            mainSub: "Dark Cyber Mode — Feline Metabolic & Dietary Precision",
+            disclaimer: "⚠️ Clinical Notice: Advanced nutritional support tool and metabolic simulation. Does not replace in-person veterinary evaluation.",
+            musicTitle: "🎶 Ambient Soft Music (Gentle Feline Spa)",
+            musicSub: "Subtle, bright and relaxing sonic atmosphere:",
+            btnMusicOn: "▶️ Turn on Ambient Music",
+            btnMusicOff: "⏸️ Pause Ambient Music",
+            secParamsTitle: "Clinical & Metabolic Parameters",
+            secParamsSub: "Configure your feline's advanced data for scientific precision calculation:",
+            lblCatName: "Cat's Name:",
+            lblYears: "Age (Years):",
+            lblMonths: "Months (0-11):",
+            lblWeight: "Current Weight (kg):",
+            lblActivity: "Physical Activity Level:",
+            lblProtein: "Base Protein / Preference:",
+            lblSymptom: "Clinical Condition / Therapeutic Goal:",
+            lblFruit: "Safe Fruit or Phytonutrient (Hydration & Antioxidant - Max 3-5%):",
+            btnCalc: "⚡ Calculate Simulation & Advanced Recipe",
+            menuBoxTitle: "🍲 Therapeutic Menu & Hydration Protocol:",
+            exportTitle: "📥 Official Export",
+            btnDownload: "📥 Download Clinical Report as PDF",
+            apaHeader: "📚 Advanced Scientific References (APA Format) — View Clinical Backing",
+            actOpts: ["Sedentary (Indoor / Low energy - Factor 30)", "Playful / Moderate Activity (Factor 35)", "Very Active / High Energy (Factor 40)"],
+            protOpts: ["Chicken or Turkey (Digestible Standard)", "Lean Beef or Pork (High Density)", "White Fish / Salmon (Skin Support)"],
+            symOpts: ["Healthy Cat / General Maintenance", "Diarrhea / Digestive Sensitivity (Intestinal inflammation)", "Dull Coat / Dry Skin (Fatty acid deficit)", "Chronic Kidney Disease (CKD / Kidney care)", "Urinary Problems / FLUTD (Cystitis, crystal prevention)", "Overweight / Obesity (Calorie & satiety control)", "Advanced Senior Cat (Joint & digestive support)"],
+            fruitOpts: ["🚫 No fruit (Exclude vegetables)", "Blueberries (Antioxidants & urinary tract)", "Seedless Apple (Digestive pectin)", "Cubed Watermelon (Renal & urinary hydration)", "Melon (Soft vitamin intake)"]
+        },
+        de: {
+            lblLang: "Sprache:",
+            mainTitle: "🐱⚡ Onkel Nepomucenos Therapeutischer Simulator",
+            mainSub: "Dark Cyber Modus — Feline Stoffwechsel- und Diätgenauigkeit",
+            disclaimer: "⚠️ Klinischer Hinweis: Fortgeschrittenes Ernährungsunterstützungstool. Ersetzt keine persönliche tierärztliche Untersuchung.",
+            musicTitle: "🎶 Sanfte Hintergrundmusik (Sanftes Katzen-Spa)",
+            musicSub: "Dezente, helle und entspannende Klangatmosphäre:",
+            btnMusicOn: "▶️ Hintergrundmusik Einschalten",
+            btnMusicOff: "⏸️ Hintergrundmusik Pausieren",
+            secParamsTitle: "Klinische und Stoffwechselparameter",
+            secParamsSub: "Konfigurieren Sie die erweiterten Daten Ihrer Katze für eine wissenschaftlich präzise Berechnung:",
+            lblCatName: "Name der Katze:",
+            lblYears: "Alter (Jahre):",
+            lblMonths: "Monate (0-11):",
+            lblWeight: "Aktuelles Gewicht (kg):",
+            lblActivity: "Körperliches Aktivitätsniveau:",
+            lblProtein: "Basisprotein / Präferenz:",
+            lblSymptom: "Klinischer Zustand / Therapeutisches Ziel:",
+            lblFruit: "Sichere Frucht oder Nährstoff (Hydratation & Antioxidantien - Max. 3-5%):",
+            btnCalc: "⚡ Simulation & Erweiterte Rezeptur Berechnen",
+            menuBoxTitle: "🍲 Therapeutisches Menü & Trinkprotokoll:",
+            exportTitle: "📥 Offizieller Export",
+            btnDownload: "📥 Klinischen Bericht als PDF Herunterladen",
+            apaHeader: "📚 Erweiterte Wissenschaftliche Referenzen (APA) — Klinische Belege Ansehen",
+            actOpts: ["Sesshaft (Wohnungskatze / Geringer Verbrauch - Faktor 30)", "Verspielt / Mäßige Aktivität (Faktor 35)", "Sehr Aktiv / Hohe Energie (Faktor 40)"],
+            protOpts: ["Hühnchen oder Pute (Verdaulicher Standard)", "Mageres Rind- oder Schweinefleisch (Hohe Dichte)", "Weißfisch / Lachs (Hautunterstützung)"],
+            symOpts: ["Gesunde Katze / Allgemeine Erhaltung", "Durchfall / Verdauungsempfindlichkeit (Darmentzündung)", "Stumpfes Fell / Trockene Haut (Fettsäurenmangel)", "Chronische Nierenerkrankung (CNE / Nierenpflege)", "Harnwegsprobleme / FLUTD (Zystitis, Kristallvorbeugung)", "Übergewicht / Adipositas (Kalorien- und Sättigungskontrolle)", "Fortgeschrittene Senior-Katze (Gelenk- und Verdauungsunterstützung)"],
+            fruitOpts: ["🚫 Keine Frucht (Gemüse ausschließen)", "Blaubeeren (Antioxidantien & Harnwege)", "Kernloser Apfel (Verdauungspektin)", "Gewürfelte Wassermelone (Nieren- & Harnhydration)", "Melone (Sanfte Vitaminzufuhr)"]
+        },
+        ru: {
+            lblLang: "Язык:",
+            mainTitle: "🐱⚡ Терапевтический симулятор дяди Непомучено",
+            mainSub: "Режим Dark Cyber — Метаболическая и диетическая точность для кошек",
+            disclaimer: "⚠️ Клиническое уведомление: Инструмент нутритивной поддержки. Не заменяет очный осмотр ветеринара.",
+            musicTitle: "🎶 Фоновая музыка (Кошачий спа)",
+            musicSub: "Тонкая, светлая и расслабляющая звуковая атмосфера:",
+            btnMusicOn: "▶️ Включить музыку",
+            btnMusicOff: "⏸️ Приостановить музыку",
+            secParamsTitle: "Клинические и метаболические параметры",
+            secParamsSub: "Настройте продвинутые данные вашей кошки для точного расчета:",
+            lblCatName: "Кличка кошки:",
+            lblYears: "Возраст (лет):",
+            lblMonths: "Месяцы (0-11):",
+            lblWeight: "Текущий вес (кг):",
+            lblActivity: "Уровень физической активности:",
+            lblProtein: "Базовый белок / Предпочтение:",
+            lblSymptom: "Клиническое состояние / Цель:",
+            lblFruit: "Безопасный фрукт или нутриент (Гидратация и антиоксиданты - Макс. 3-5%):",
+            btnCalc: "⚡ Рассчитать симуляцию и рецепт",
+            menuBoxTitle: "🍲 Лечебное меню и протокол гидратации:",
+            exportTitle: "📥 Официальный экспорт",
+            btnDownload: "📥 Скачать клинический отчет в PDF",
+            apaHeader: "📚 Научные ссылки (Формат APA) — Просмотреть клинические данные",
+            actOpts: ["Малоподвижный (Домашняя / Низкие затраты - Фактор 30)", "Игривый / Умеренная активность (Фактор 35)", "Очень активный / Высокая энергия (Фактор 40)"],
+            protOpts: ["Курица или индейка (Легкоусвояемый стандарт)", "Постная говядина или свинина (Высокая плотность)", "Белая рыба / Лосось (Поддержка кожи)"],
+            symOpts: ["Здоровая кошка / Общее поддержание", "Диарея / Чувствительность пищеварения (Воспаление кишечника)", "Тусклая шерсть / Сухая кожа (Дефицит жирных кислот)", "Хроническая болезнь почек (ХБП / Уход за почками)", "Проблемы с мочеиспусканием / FLUTD (Цистит, профилактика)", "Избыточный вес / Ожирение (Контроль калорий)", "Пожилая кошка (Поддержка суставов и пищеварения)"],
+            fruitOpts: ["🚫 Без фруктов (Исключить овощи)", "Черника (Антиоксиданты и мочевыводящие пути)", "Яблоко без семян (Пищевой пектин)", "Арбуз кубиками (Почечная гидратация)", "Дыня (Мягкие витамины)"]
+        },
+        zh: {
+            lblLang: "语言:",
+            mainTitle: "🐱⚡ 尼波穆切诺叔叔的猫咪治疗模拟器",
+            mainSub: "暗黑赛博模式 — 猫咪代谢与饮食精确计算",
+            disclaimer: "⚠️ 临床须知：高级营养支持与代谢模拟工具。不能替代面诊兽医。",
+            musicTitle: "🎶 背景轻音乐 (猫咪水疗舒缓)",
+            musicSub: "微妙、明亮且放松的声音氛围：",
+            btnMusicOn: "▶️ 开启背景音乐",
+            btnMusicOff: "⏸️ 暂停背景音乐",
+            secParamsTitle: "临床与代谢参数",
+            secParamsSub: "配置猫咪的高级数据以进行科学精确计算：",
+            lblCatName: "猫咪名字:",
+            lblYears: "年龄 (岁):",
+            lblMonths: "月份 (0-11):",
+            lblWeight: "当前体重 (kg):",
+            lblActivity: "体力活动水平:",
+            lblProtein: "基础蛋白质 / 偏好:",
+            lblSymptom: "临床状况 / 治疗目标:",
+            lblFruit: "安全水果或植物营养素 (水分与抗氧化 - 最高 3-5%):",
+            btnCalc: "⚡ 计算模拟与高级食谱",
+            menuBoxTitle: "🍲 治疗食谱与水分补充方案:",
+            exportTitle: "📥 官方导出",
+            btnDownload: "📥 下载 PDF 临床报告",
+            apaHeader: "📚 高级科学参考文献 (APA 格式) — 查看临床支持",
+            actOpts: ["久坐不动 (室内/低消耗 - 系数 30)", "爱玩/中等活动 (系数 35)", "非常活跃/高能量 (系数 40)"],
+            protOpts: ["鸡肉或火鸡肉 (高消化标准)", "瘦牛肉或猪肉 (高密度)", "白鱼/三文鱼 (皮肤毛发支持)"],
+            symOpts: ["健康猫咪/日常维护", "腹泻/消化敏感 (肠道炎症)", "毛发黯淡/皮肤干燥 (脂肪酸缺乏)", "慢性肾病 (CKD/肾脏护理)", "泌尿问题/FLUTD (膀胱炎、结石预防)", "超重/肥胖 (热量与饱腹感控制)", "高级老年猫 (关节与消化支持)"],
+            fruitOpts: ["🚫 无水果 (排除蔬菜)", "蓝莓 (抗氧化与泌尿道)", "去籽苹果 (消化果胶)", "西瓜小方块 (肾脏泌尿补水)", "甜瓜 (温和维生素)"]
+        },
+        ja: {
+            lblLang: "言語:",
+            mainTitle: "🐱⚡ ネポムセノおじさんの猫用治療シミュレーター",
+            mainSub: "ダークサイバーモード — 猫の代謝と食事の精密計算",
+            disclaimer: "⚠️ 臨床上の注意：高度な栄養サポートおよび代謝シミュレーションツールです。対面での獣医師の診察に代わるものではありません。",
+            musicTitle: "🎶 環境音楽 (猫用リラックススパ)",
+            musicSub: "繊細で明るくリラックスできる音響空間：",
+            btnMusicOn: "▶️ 環境音楽を再生",
+            btnMusicOff: "⏸️ 環境音楽を一時停止",
+            secParamsTitle: "臨床および代謝パラメータ",
+            secParamsSub: "科学的精密計算のために猫の高度なデータを設定してください：",
+            lblCatName: "猫の名前:",
+            lblYears: "年齢 (年):",
+            lblMonths: "月 (0-11):",
+            lblWeight: "現在の体重 (kg):",
+            lblActivity: "身体活動レベル:",
+            lblProtein: "基本タンパク質 / 好み:",
+            lblSymptom: "臨床状態 / 治療目的:",
+            lblFruit: "安全な果物または植物栄養素 (水分・抗酸化 - 最大3-5%):",
+            btnCalc: "⚡ シミュレーションと高度なレシピを計算",
+            menuBoxTitle: "🍲 治療食メニューと水分補給プロトコル:",
+            exportTitle: "📥 公式エクスポート",
+            btnDownload: "📥 臨床レポートをPDFでダウンロード",
+            apaHeader: "📚 高度な科学的参考文献 (APA形式) — 臨床的裏付けを見る",
+            actOpts: ["運動不足 (室内/低活動 - 係数30)", "遊び好き/中等度活動 (係数35)", "非常に活発/高エネルギー (係数40)"],
+            protOpts: ["鶏肉またはターキー (消化しやすい標準)", "赤身の牛肉または豚肉 (高密度)", "白身魚 / サーモン (皮膚サポート)"],
+            symOpts: ["健康な猫 / 一般的な維持", "下痢 / 消化器過敏 (腸の炎症)", "被毛のくすみ / 乾燥肌 (脂肪酸不足)", "慢性腎臓病 (CKD / 腎臓ケア)", "泌尿器の問題 / FLUTD (膀胱炎、結石予防)", "過体重 / 肥満 (カロリー・満腹感コントロール)", "高齢猫 (関節と消化のサポート)"],
+            fruitOpts: ["🚫 果物なし (野菜を除外)", "ブルーベリー (抗酸化物質と尿路)", "種なしリンゴ (消化ペクチン)", "スイカのキューブ (腎臓と尿路の水分補給)", "メロン (優しいビタミン補給)"]
+        },
+        pt: {
+            lblLang: "Idioma:",
+            mainTitle: "🐱⚡ Simulador Terapéutico do Tio Nepomuceno",
+            mainSub: "Modo Dark Cyber — Precisão Metabólica e Dietética Felina",
+            disclaimer: "⚠️ Aviso Clínico: Ferramenta avançada de suporte nutricional e simulação metabólica. Não substitui a avaliação veterinária presencial.",
+            musicTitle: "🎶 Música Ambiente Suave (Spa Felino Relaxante)",
+            musicSub: "Atmosfera sonora subtil, luminosa e relaxante:",
+            btnMusicOn: "▶️ Ativar Música Ambiente",
+            btnMusicOff: "⏸️ Pausar Música Ambiente",
+            secParamsTitle: "Parámetros Clínicos e Metabólicos",
+            secParamsSub: "Configure os dados avançados do seu felino para um cálculo de precisão científica:",
+            lblCatName: "Nome do Gato:",
+            lblYears: "Idade (Anos):",
+            lblMonths: "Meses (0-11):",
+            lblWeight: "Peso Atual (kg):",
+            lblActivity: "Nível de Atividade Física:",
+            lblProtein: "Proteína Base / Preferência:",
+            lblSymptom: "Condição Clínica / Objetivo Terapéutico:",
+            lblFruit: "Fruta / Fitonutriente Seguro (Hidratação e antioxidantes - Máx 3-5%):",
+            btnCalc: "⚡ Calcular Simulação e Receita Avançada",
+            menuBoxTitle: "🍲 Menu Terapéutico e Protocolo de Hidratação:",
+            exportTitle: "📥 Exportação Oficial",
+            btnDownload: "📥 Baixar Relatório Clínico em PDF",
+            apaHeader: "📚 Referências Científicas Avanzadas (Formato APA) — Ver Suportes Clínicos",
+            actOpts: ["Sedentário (Ambiente interno / Baixo gasto - Fator 30)", "Brincalhão / Atividade Moderada (Fator 35)", "Muito Ativo / Alta Energia (Fator 40)"],
+            protOpts: ["Frango ou Peru (Padrão Digestível)", "Carne Bovina ou Suína Magra (Alta Densidad)", "Peixe Branco / Salmão (Suporte dérmico)"],
+            symOpts: ["Gato Saudável / Manutenção Geral", "Diarreia / Sensibilidade Digestiva (Inflamação intestinal)", "Pelagem Opaca / Pele Seca (Déficit de ácidos graxos)", "Doença Renal Crônica (DRC / Cuidado renal)", "Problemas Urinários / FLUTD (Cistite, prevenção de cristais)", "Sobrepeso / Obesidade (Controle calórico e saciedad)", "Gato Sénior Avançado (Suporte articular e digestivo)"],
+            fruitOpts: ["🚫 Sem fruta (Excluir vegetais)", "Mirtilos (Antioxidantes e trato urinário)", "Maçã sem sementes (Pectina digestiva)", "Melancia em cubos (Hidratação renal e urinária)", "Melão (Aporte vitamínico suave)"]
+        },
+        fr: {
+            lblLang: "Langue:",
+            mainTitle: "🐱⚡ Simulateur Thérapeutique de l'Oncle Nepomuceno",
+            mainSub: "Mode Dark Cyber — Précision Métabolique et Diététique Féline",
+            disclaimer: "⚠️ Avis clinique : Outil avancé de soutien nutritionnel et de simulation métabolique. Ne remplace pas l'évaluation vétérinaire en personne.",
+            musicTitle: "🎶 Musique Ambiante Douce (Spa Félin Relaxant)",
+            musicSub: "Atmosphère sonore subtile, lumineuse et relaxante :",
+            btnMusicOn: "▶️ Activer la Musique Ambiante",
+            btnMusicOff: "⏸️ Pause Musique Ambiante",
+            secParamsTitle: "Paramètres Cliniques et Métaboliques",
+            secParamsSub: "Configurez les données avancées de votre félin pour un calcul de précision scientifique :",
+            lblCatName: "Nom du Chat :",
+            lblYears: "Âge (Années) :",
+            lblMonths: "Mois (0-11) :",
+            lblWeight: "Poids Actuel (kg) :",
+            lblActivity: "Niveau d'Activité Physique :",
+            lblProtein: "Protéine de Base / Préférence :",
+            lblSymptom: "Condition Clinique / Objectif Thérapeutique :",
+            lblFruit: "Fruit / Phytonutriment Sûr (Hydratation et antioxydants - Max 3-5%) :",
+            btnCalc: "⚡ Calculer la Simulation et la Recette Avancée",
+            menuBoxTitle: "🍲 Menu Thérapeutique et Protocole d'Hydratation :",
+            exportTitle: "📥 Exportation Officielle",
+            btnDownload: "📥 Télécharger le Rapport Clinique en PDF",
+            apaHeader: "📚 Références Scientifiques Avancées (Format APA) — Voir les Supports Cliniques",
+            actOpts: ["Sédentaire (Intérieur / Faible dépense - Facteur 30)", "Joueur / Activité Modérée (Facteur 35)", "Très Actif / Haute Énergie (Facteur 40)"],
+            protOpts: ["Poulet ou Dinde (Standard Digestible)", "Bœuf ou Porc Maigre (Haute Densité)", "Poisson Blanc / Saumon (Support cutané)"],
+            symOpts: ["Chat Sain / Maintenance Générale", "Diarrhea / Sensibilité Digestive (Inflammation intestinale)", "Pelage Opaque / Peau Sèche (Déficit en acides gras)", "Maladie Rénale Chronique (MRC / Soin des reins)", "Problèmes Urinaires / FLUTD (Cystite, prévention des cristaux)", "Surpoids / Obesité (Contrôle calorique et satiété)", "Chat Senior Avancé (Soutien articulaire et digestif)"],
+            fruitOpts: ["🚫 Sans fruit (Exclure les légumes)", "Myrtilles (Antioxydants et voies urinaires)", "Pomme sans pépins (Pectine digestive)", "Pastèque en dés (Hydratation rénale et urinaire)", "Melon (Apport vitaminique doux)"]
+        },
+        it: {
+            lblLang: "Lingua:",
+            mainTitle: "🐱⚡ Simulatore Terapeutico dello Zio Nepomuceno",
+            mainSub: "Modalità Dark Cyber — Precisione Metabolica e Dietetica Felina",
+            disclaimer: "⚠️ Avviso Clinico: Strumento avanzato di supporto nutrizionale e simulazione metabolica. Non sostituisce la valutazione veterinaria di persona.",
+            musicTitle: "🎶 Musica Ambientale Tenue (Spa Felina Rilassante)",
+            musicSub: "Atmosfera sonora sottile, luminosa e rilassante:",
+            btnMusicOn: "▶️ Attiva Musica Ambientale",
+            btnMusicOff: "⏸️ Pausa Musica Ambientale",
+            secParamsTitle: "Parametri Clinici e Metabolici",
+            secParamsSub: "Configura i dati avanzati del tuo felino per un calcolo di precisione scientifica:",
+            lblCatName: "Nome del Gatto:",
+            lblYears: "Età (Anni):",
+            lblMonths: "Mesi (0-11):",
+            lblWeight: "Peso Attuale (kg):",
+            lblActivity: "Livello di Attività Fisica:",
+            lblProtein: "Proteina Base / Preferenza:",
+            lblSymptom: "Condizione Clinica / Obiettivo Terapeutico:",
+            lblFruit: "Frutta / Fitonutriente Sicuro (Idratazione e antiossidanti - Max 3-5%):",
+            btnCalc: "⚡ Calcola Simulazione e Ricetta Avanzata",
+            menuBoxTitle: "🍲 Menu Terapeutico e Protocollo di Idratazione:",
+            exportTitle: "📥 Esportazione Ufficiale",
+            btnDownload: "📥 Scarica Report Clinico in PDF",
+            apaHeader: "📚 Riferimenti Scientifici Avanzati (Formato APA) — Visualizza Supporti Clinici",
+            actOpts: ["Sedentario (Da interno / Basso consumo - Fattore 30)", "Giocherellone / Attività Moderata (Fattore 35)", "Molto Attivo / Alta Energia (Fattore 40)"],
+            protOpts: ["Pollo o Tacchino (Standard Digeribile)", "Manzo o Maiale Magro (Alta Densità)", "Pesce Bianco / Salmone (Supporto cutaneo)"],
+            symOpts: ["Gatto Sano / Mantenimento Generale", "Diarrea / Sensibilità Digestiva (Infiammazione intestinale)", "Pelo Opaco / Pelle Secca (Deficit di acidi grassi)", "Malattia Renale Cronica (MRC / Cura dei reni)", "Problemi Urinari / FLUTD (Cistite, prevenzione cristalli)", "Sovrappeso / Obesità (Controllo calorico e sazietà)", "Gatto Senior Avanzano (Supporto articolare e digestivo)"],
+            fruitOpts: ["🚫 Senza frutta (Escludi verdure)", "Mirtilli (Antiossidanti e tratto urinario)", "Mela senza semi (Pectina digestiva)", "Anguria a cubetti (Idratazione renale e urinaria)", "Melone (Apporto vitaminico delicato)"]
+        },
+        pl: {
+            lblLang: "Język:",
+            mainTitle: "🐱⚡ Symulator Terapeutyczny Wujka Nepomuceno",
+            mainSub: "Tryb Dark Cyber — Precyzja Metaboliczna i Dietetyczna Kotów",
+            disclaimer: "⚠️ Informacja kliniczna: Zaawansowane narzędzie wspomagania żywieniowego i symulacji metabolicznej. Nie zastępuje wizyty u lekarza weterynarii.",
+            musicTitle: "🎶 Delikatna Muzyka w Tle (Kocie SPA)",
+            musicSub: "Subtelna, jasna i relaksująca atmosfera dźwiękowa:",
+            btnMusicOn: "▶️ Włącz Muzykę w Tle",
+            btnMusicOff: "⏸️ Zatrzymaj Muzykę",
+            secParamsTitle: "Parametry Kliniczne i Metaboliczne",
+            secParamsSub: "Skonfiguruj zaawansowane dane swojego kota, aby uzyskać precyzyjny wynik naukowy:",
+            lblCatName: "Imię Kota:",
+            lblYears: "Wiek (Lata):",
+            lblMonths: "Miesiące (0-11):",
+            lblWeight: "Aktualna Waga (kg):",
+            lblActivity: "Poziom Aktywności Fizycznej:",
+            lblProtein: "Białko Bazowe / Preferencja:",
+            lblSymptom: "Stan Kliniczny / Cel Terapeutyczny:",
+            lblFruit: "Bezpieczny Owoc / Składnik (Nawodnienie i antyoksydanty - Maks. 3-5%):",
+            btnCalc: "⚡ Oblicz Symulację i Zaawansowany Przepis",
+            menuBoxTitle: "🍲 Menu Terapeutyczne i Protokół Nawodnienia:",
+            exportTitle: "📥 Oficjalny Eksport",
+            btnDownload: "📥 Pobierz Raport Kliniczny w PDF",
+            apaHeader: "📚 Zaawansowane Referencje Naukowe (Format APA) — Zobacz Dowody Kliniczne",
+            actOpts: ["Siedzący (Wewnątrz / Niskie zużycie - Współczynnik 30)", "Żywy / Umiarkowana aktywność (Współczynnik 35)", "Bardzo aktywny / Wysoka energia (Współczynnik 40)"],
+            protOpts: ["Kurczak lub Indyk (Standard strawny)", "Chuda Wołowina lub Wieprzowina (Wysoka gęstość)", "Biała Ryba / Łosoś (Wsparcie skóry)"],
+            symOpts: ["Zdrowy Kot / Ogólne Utrzymanie", "Biegunka / Wrażliwość Przewodu Pokarmowego (Zapalenie jelit)", "Matowa Sierść / Sucha Skóra (Niedobór kwasów tłuszczowych)", "Przewlekła Choroba Nerek (PChN / Ochrona nerek)", "Problemy z Układem Moczowym / FLUTD (Zapalenie pęcherza)", "Nadwaga / Otyłość (Kontrola kalorii i sytość)", "Starszy Kot Senior (Wsparcie stawów i trawienia)"],
+            fruitOpts: ["🚫 Bez owoców (Wyklucz warzywa)", "Jagody (Antyoksydanty i drogi moczowe)", "Jabłko bez pestek (Pektyna trawienna)", "Arbuz w kostkach (Nawodnienie nerek i dróg moczowych)", "Melon (Łagodne witaminy)"]
+        }
+    };
+
+    
+    function changePalette() {
+        playHappyMeow();
+        const p = document.getElementById('paletteSelect').value;
+        document.body.className = p;
+    }
+
+    function changeLanguage() {
+        const lang = document.getElementById('langSelect').value;
+        const d = dict[lang] || dict['es'];
+
+        document.getElementById('lblLang').innerText = d.lblLang;
+        document.getElementById('mainTitle').innerText = d.mainTitle;
+        document.getElementById('mainSub').innerText = d.mainSub;
+        document.getElementById('disclaimerBox').innerHTML = `<strong>${d.disclaimer.split(':')[0]}:</strong>${d.disclaimer.split(':')[1]}`;
+        document.getElementById('musicTitle').innerText = d.musicTitle;
+        document.getElementById('musicSub').innerText = d.musicSub;
+        
+        const musicBtn = document.getElementById('musicToggleBtn');
+        musicBtn.innerText = isMusicPlaying ? d.btnMusicOff : d.btnMusicOn;
+
+        document.getElementById('sectionParamsTitle').innerText = d.secParamsTitle;
+        document.getElementById('sectionParamsSub').innerText = d.secParamsSub;
+        document.getElementById('lblCatName').innerText = d.lblCatName;
+        document.getElementById('lblYears').innerText = d.lblYears;
+        document.getElementById('lblMonths').innerText = d.lblMonths;
+        document.getElementById('lblWeight').innerText = d.lblWeight;
+        document.getElementById('lblActivity').innerText = d.lblActivity;
+        document.getElementById('lblProtein').innerText = d.lblProtein;
+        document.getElementById('lblSymptom').innerText = d.lblSymptom;
+        document.getElementById('lblFruit').innerText = d.lblFruit;
+        document.getElementById('btnCalc').innerText = d.btnCalc;
+        document.getElementById('menuBoxTitle').innerText = d.menuBoxTitle;
+        document.getElementById('exportTitle').innerText = d.exportTitle;
+        document.getElementById('btnDownload').innerText = d.btnDownload;
+        document.getElementById('apaHeaderTxt').innerText = d.apaHeader;
+
+        const actSel = document.getElementById('iActivity');
+        for(let i=0; i<actSel.options.length; i++) actSel.options[i].text = d.actOpts[i];
+
+        const protSel = document.getElementById('iProtein');
+        for(let i=0; i<protSel.options.length; i++) protSel.options[i].text = d.protOpts[i];
+
+        const symSel = document.getElementById('iSymptom');
+        for(let i=0; i<symSel.options.length; i++) symSel.options[i].text = d.symOpts[i];
+
+        const fruitSel = document.getElementById('iFruit');
+        for(let i=0; i<fruitSel.options.length; i++) fruitSel.options[i].text = d.fruitOpts[i];
+    }
+
+    function toggleAmbientMusic() {
+        const lang = document.getElementById('langSelect').value;
+        const d = dict[lang] || dict['es'];
+        const btn = document.getElementById('musicToggleBtn');
+        
+        if (!isMusicPlaying) {
+            try {
+                ambientCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ambientCtx.state === 'suspended') ambientCtx.resume();
+
+                const chords = [
+                    [523.25, 659.25, 783.99],
+                    [440.00, 523.25, 659.25],
+                    [349.23, 440.00, 523.25],
+                    [392.00, 493.88, 587.33]
+                ];
+                let chordIndex = 0;
+
+                function playChord() {
+                    if (!isMusicPlaying || !ambientCtx) return;
+                    const notes = chords[chordIndex];
+                    chordIndex = (chordIndex + 1) % chords.length;
+
+                    notes.forEach((freq) => {
+                        try {
+                            const osc = ambientCtx.createOscillator();
+                            const gain = ambientCtx.createGain();
+                            const filter = ambientCtx.createBiquadFilter();
+
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, ambientCtx.currentTime);
+
+                            filter.type = 'lowpass';
+                            filter.frequency.setValueAtTime(300, ambientCtx.currentTime);
+
+                            gain.gain.setValueAtTime(0.0001, ambientCtx.currentTime);
+                            gain.gain.linearRampToValueAtTime(0.008, ambientCtx.currentTime + 2.0);
+                            gain.gain.exponentialRampToValueAtTime(0.0001, ambientCtx.currentTime + 5.5);
+
+                            osc.connect(filter);
+                            filter.connect(gain);
+                            gain.connect(ambientCtx.destination);
+
+                            osc.start(ambientCtx.currentTime);
+                            osc.stop(ambientCtx.currentTime + 6.0);
+                        } catch(err) {}
+                    });
+                }
+
+                playChord();
+                ambientInterval = setInterval(playChord, 5500);
+
+                isMusicPlaying = true;
+                btn.innerText = d.btnMusicOff;
+                btn.style.background = "#ff4757";
+            } catch (e) {
+                alert("Audio context error.");
+            }
+        } else {
+            if (ambientInterval) clearInterval(ambientInterval);
+            if (ambientCtx) {
+                ambientCtx.close();
+                ambientCtx = null;
+            }
+            isMusicPlaying = false;
+            btn.innerText = d.btnMusicOn;
+            btn.style.background = "#00d2d3";
+        }
+    }
+
+    function playPurr() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const lfo = ctx.createOscillator();
+            const lfoGain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(28, ctx.currentTime);
+
+            lfo.type = 'sine';
+            lfo.frequency.setValueAtTime(20, ctx.currentTime);
+            lfoGain.gain.setValueAtTime(12, ctx.currentTime);
+            lfoGain.connect(lfo.frequency);
+
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            lfo.start();
+            osc.stop(ctx.currentTime + 0.3);
+            lfo.stop(ctx.currentTime + 0.3);
+        } catch(e) {}
+    }
+
+    function playHappyMeow() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            const now = ctx.currentTime;
+            osc.frequency.setValueAtTime(450, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.12);
+            osc.frequency.exponentialRampToValueAtTime(550, now + 0.3);
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.35);
+        } catch(e) {}
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input').forEach(i => i.addEventListener('input', playPurr));
+        document.querySelectorAll('select').forEach(s => s.addEventListener('change', playPurr));
+    });
+
+    function toggleApaContent() {
+        playHappyMeow();
+        const box = document.getElementById('apaContentBox');
+        const arrow = document.getElementById('apaArrow');
+        if (box.style.display === 'block') {
+            box.style.display = 'none';
+            arrow.innerText = '▼';
+        } else {
+            box.style.display = 'block';
+            arrow.innerText = '▲';
+        }
+    }
+
+    function handleCalculateClick() {
+        playHappyMeow();
+        generateInteractiveDiet();
+    }
+
+    function handleDownloadClick() {
+        playHappyMeow();
+        downloadSimulationPDF();
+    }
+
+    
+    // FUNCIONES AVANZADAS: SUPLEMENTOS, HISTORIAL Y ALARMAS
+    function updateSupplements(weight) {
+        let taurineMg = 250;
+        let calciumG = (weight * 0.1).toFixed(2);
+        let salmonDrops = Math.round(weight * 3);
+        
+        document.getElementById('suppCalcResult').innerHTML = 
+            `• Taurina: <strong>${taurineMg} mg</strong> (1 cápsula ou ¼ cdita)<br>` +
+            `• Carbonato de Calcio: <strong>${calciumG}g</strong><br>` +
+            `• Aceite de Salmón: <strong>${salmonDrops} gotas</strong>`;
+    }
+
+    function saveWeightHistory() {
+        playHappyMeow();
+        const w = parseFloat(document.getElementById('historyWeightInput').value);
+        if(!w || isNaN(w)) {
+            alert('Ingresa un peso válido.');
+            return;
+        }
+        let history = JSON.parse(localStorage.getItem('cat_weight_history') || '[]');
+        history.push({date: new Date().toLocaleDateString(), weight: w});
+        localStorage.setItem('cat_weight_history', JSON.stringify(history));
+        renderWeightHistory();
+        document.getElementById('historyWeightInput').value = '';
+    }
+
+    function clearWeightHistory() {
+        playHappyMeow();
+        if(confirm('¿Deseas borrar todo el historial de peso?')) {
+            localStorage.removeItem('cat_weight_history');
+            renderWeightHistory();
+        }
+    }
+
+    function renderWeightHistory() {
+        let history = JSON.parse(localStorage.getItem('cat_weight_history') || '[]');
+        const container = document.getElementById('weightHistoryList');
+        if(history.length === 0) {
+            container.innerHTML = '<span style="color: #718093;">No hay registros de peso guardados todavía.</span>';
+            return;
+        }
+        let html = '<ul style="margin: 0; padding-left: 20px;">';
+        history.forEach((item, idx) => {
+            html += `<li>📅 ${item.date} — <strong>${item.weight} kg</strong></li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    let alarmInterval = null;
+    let targetTimeMs = null;
+
+    function setMealAlarm() {
+        playHappyMeow();
+        const timeVal = document.getElementById('mealTimerInput').value;
+        if(!timeVal) {
+            alert('Selecciona una hora para la alarma.');
+            return;
+        }
+        const now = new Date();
+        const [hours, minutes] = timeVal.split(':');
+        let target = new Date();
+        target.setHours(parseInt(hours), parseInt(minutes), 0);
+
+        if(target <= now) {
+            target.setDate(target.getDate() + 1);
+        }
+
+        targetTimeMs = target.getTime();
+        
+        if(alarmInterval) clearInterval(alarmInterval);
+
+        alarmInterval = setInterval(() => {
+            const currentTime = new Date().getTime();
+            const diffMs = targetTimeMs - currentTime;
+
+            if(diffMs <= 0) {
+                clearInterval(alarmInterval);
+                playHappyMeow();
+                document.getElementById('alarmStatus').innerHTML = '⏰ ¡Hora de alimentar a tu felino!';
+                alert('⏰ ¡Hora de alimentar a tu felino!');
+            } else {
+                const totalSecs = Math.floor(diffMs / 1000);
+                const hrs = Math.floor(totalSecs / 3600);
+                const mins = Math.floor((totalSecs % 3600) / 60);
+                const secs = totalSecs % 60;
+                document.getElementById('alarmStatus').innerHTML = `⏳ Cuenta regresiva: <strong>${hrs}h ${mins}m ${secs}s</strong> restantes`;
+            }
+        }, 1000);
+
+        const initialDiff = targetTimeMs - now.getTime();
+        const initMins = Math.round(initialDiff / 60000);
+        document.getElementById('alarmStatus').innerText = `✅ Alarma programada para las ${timeVal} (~${initMins} minutos restantes).`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        renderWeightHistory();
+    });
+
+    
+    // JS MÓDULOS v7
+    function saveCatProfile() {
+        playHappyMeow();
+        const name = document.getElementById('iName').value.trim() || "Neo";
+        const profile = {
+            name,
+            years: document.getElementById('iYears').value,
+            months: document.getElementById('iMonths').value,
+            weight: document.getElementById('iWeight').value,
+            activity: document.getElementById('iActivity').value,
+            protein: document.getElementById('iProtein').value,
+            symptom: document.getElementById('iSymptom').value,
+            fruit: document.getElementById('iFruit').value
+        };
+        let profiles = JSON.parse(localStorage.getItem('cat_profiles') || '{}');
+        profiles[name] = profile;
+        localStorage.setItem('cat_profiles', JSON.stringify(profiles));
+        updateProfileSelect();
+        alert(`¡Perfil de ${name} guardado con éxito!`);
+    }
+
+    function updateProfileSelect() {
+        let profiles = JSON.parse(localStorage.getItem('cat_profiles') || '{}');
+        const sel = document.getElementById('profileSelect');
+        sel.innerHTML = '<option value="">Cargar perfil...</option>';
+        for(let key in profiles) {
+            sel.innerHTML += `<option value="${key}">${key}</option>`;
+        }
+    }
+
+    function loadCatProfile() {
+        playHappyMeow();
+        const name = document.getElementById('profileSelect').value;
+        if(!name) return;
+        let profiles = JSON.parse(localStorage.getItem('cat_profiles') || '{}');
+        const p = profiles[name];
+        if(p) {
+            document.getElementById('iName').value = p.name;
+            document.getElementById('iYears').value = p.years;
+            document.getElementById('iMonths').value = p.months;
+            document.getElementById('iWeight').value = p.weight;
+            document.getElementById('iActivity').value = p.activity;
+            document.getElementById('iProtein').value = p.protein;
+            document.getElementById('iSymptom').value = p.symptom;
+            document.getElementById('iFruit').value = p.fruit;
+            generateInteractiveDiet();
+        }
+    }
+
+    function calculateMonthlyCost() {
+        const weight = parseFloat(document.getElementById('iWeight').value) || 4.0;
+        let factor = 35;
+        const activity = document.getElementById('iActivity').value;
+        if (activity === 'sedentary') factor = 30;
+        else if (activity === 'active') factor = 40;
+        let totalDailyGrams = Math.round(weight * factor);
+        if(totalDailyGrams < 90) totalDailyGrams = 90;
+        if(totalDailyGrams > 350) totalDailyGrams = 350;
+
+        const costPerKg = parseFloat(document.getElementById('costPerKgInput').value) || 120;
+        const monthlyKg = (totalDailyGrams * 30) / 1000;
+        const monthlyCost = Math.round(monthlyKg * costPerKg);
+        document.getElementById('monthlyCostResult').innerText = `Gasto estimado: ~$${monthlyCost} mensuales (${monthlyKg.toFixed(1)} kg/mes)`;
+    }
+
+    function updatePantry() {
+        playHappyMeow();
+        const stock = document.getElementById('pantryStockInput').value;
+        if(!stock) return;
+        localStorage.setItem('cat_pantry_stock', stock);
+        document.getElementById('pantryStatus').innerText = `Stock registrado: ${stock} kg de proteína`;
+        document.getElementById('pantryStockInput').value = '';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updateProfileSelect();
+        const savedStock = localStorage.getItem('cat_pantry_stock');
+        if(savedStock) {
+            document.getElementById('pantryStatus').innerText = `Stock registrado: ${savedStock} kg de proteína`;
+        }
+    });
+
+    function generateInteractiveDiet() {
+        const name = document.getElementById('iName').value.trim() || "Neo";
+        const years = parseInt(document.getElementById('iYears').value) || 0;
+        const months = parseInt(document.getElementById('iMonths').value) || 0;
+        const weight = parseFloat(document.getElementById('iWeight').value) || 4.0;
+        const activity = document.getElementById('iActivity').value;
+        const protein = document.getElementById('iProtein').value;
+        const symptom = document.getElementById('iSymptom').value;
+        const fruit = document.getElementById('iFruit').value;
+
+        let factor = 35;
+        if (activity === 'sedentary') factor = 30;
+        else if (activity === 'active') factor = 40;
+
+        let totalDailyGrams = Math.round(weight * factor);
+        if(totalDailyGrams < 90) totalDailyGrams = 90;
+        if(totalDailyGrams > 350) totalDailyGrams = 350;
+
+        let totalWaterMl = Math.round(weight * 52);
+
+        let totalSpoons = (totalDailyGrams / 15).toFixed(1);
+        let waterSpoons = (totalWaterMl / 15).toFixed(1);
+        let waterCups = (totalWaterMl / 250).toFixed(1);
+
+        let meatGrams, organGrams, fruitGrams, supplementGrams, specificMenu;
+
+        if(fruit === 'sin') {
+            meatGrams = Math.round(totalDailyGrams * 0.86);
+            organGrams = Math.round(totalDailyGrams * 0.10);
+            fruitGrams = 0;
+            supplementGrams = totalDailyGrams - (meatGrams + organGrams);
+
+            let meatSpoons = (meatGrams / 15).toFixed(1);
+            let organSpoons = (organGrams / 15).toFixed(1);
+            let suppSpoons = (Math.max(1, supplementGrams) / 5).toFixed(1);
+
+            specificMenu = `• <strong>Proteína base (${protein}):</strong> ${meatGrams}g (aprox. <strong>${meatSpoons} cucharadas soperas</strong>).<br>` +
+                           `• <strong>Vísceras esenciales:</strong> ${organGrams}g (aprox. <strong>${organSpoons} cucharadas soperas</strong>).<br>` +
+                           `• <strong>Fitonutrientes / Fruta:</strong> Excluidos.<br>` +
+                           `• <strong>Suplementos y micronutrientes:</strong> ${supplementGrams}g (aprox. <strong>${suppSpoons} cucharaditas</strong> de Calcio y aceite de salmón).`;
+        } else {
+            meatGrams = Math.round(totalDailyGrams * 0.82);
+            organGrams = Math.round(totalDailyGrams * 0.10);
+            fruitGrams = Math.round(totalDailyGrams * 0.04);
+            supplementGrams = totalDailyGrams - (meatGrams + organGrams + fruitGrams);
+
+            let meatSpoons = (meatGrams / 15).toFixed(1);
+            let organSpoons = (organGrams / 15).toFixed(1);
+            let fruitSpoons = (fruitGrams / 15).toFixed(1);
+            let suppSpoons = (Math.max(1, supplementGrams) / 5).toFixed(1);
+
+            specificMenu = `• <strong>Proteína base (${protein}):</strong> ${meatGrams}g (aprox. <strong>${meatSpoons} cucharadas soperas</strong>).<br>` +
+                           `• <strong>Vísceras esenciales:</strong> ${organGrams}g (aprox. <strong>${organSpoons} cucharadas soperas</strong>).<br>` +
+                           `• <strong>Fruta seleccionada:</strong> ${fruitGrams}g (aprox. <strong>${fruitSpoons} cucharadas soperas</strong>).<br>` +
+                           `• <strong>Suplementos y micronutrientes:</strong> ${supplementGrams}g (aprox. <strong>${suppSpoons} cucharaditas</strong> de Calcio y aceite de salmón).`;
+        }
+
+        let predxText = `Evaluación clínica | Actividad: <strong>${activity}</strong> | Condición: <strong>${symptom}</strong>.`;
+        let frequency = "2 comidas principales al día (dividido en raciones iguales)";
+
+        currentSimulation = {
+            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            name, years, months, weight, activity, protein, symptom, fruit, totalDailyGrams, totalWaterMl, meatGrams, organGrams, fruitGrams, supplementGrams, specificMenu, frequency, predxText
+        };
+
+        updateSupplements(weight);
+        calculateMonthlyCost();
+        document.getElementById('resTitle').innerText = `📋 Reporte Clínico y Nutricional para: ${name}`;
+        document.getElementById('resPredx').innerHTML = `<strong>Edad:</strong> ${years} años y ${months} meses | <strong>Peso:</strong> ${weight} kg<br>${predxText}`;
+        document.getElementById('resPortion').innerHTML = `⚖️ Porción Diaria Total de Alimento: <u>${totalDailyGrams} gramos</u> (aprox. <strong>${totalSpoons} cucharadas soperas</strong> al día)`;
+        document.getElementById('resWater').innerHTML = `💧 Hidratación Diaria Sugerida: <u>${totalWaterMl} ml / día</u> (aprox. <strong>${waterSpoons} cucharadas soperas</strong> o <strong>${waterCups} tazas</strong> distribuidas en bebederos)`;
+        document.getElementById('resMenu').innerHTML = specificMenu;
+        
+        const card = document.getElementById('resultCard');
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function generatePDFBlob(sim) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const palette = document.body.className;
+        let bgCol = [26, 34, 39];
+        let boxCol = [31, 43, 51];
+        let subBoxCol = [39, 48, 58];
+        let accentCol = [0, 210, 211];
+        let textCol = [241, 242, 246];
+        let mutedCol = [164, 176, 190];
+        let borderCol = [0, 210, 211];
+
+        if (palette === 'theme-light') {
+            bgCol = [245, 246, 250];
+            boxCol = [255, 255, 255];
+            subBoxCol = [241, 242, 246];
+            accentCol = [0, 151, 230];
+            textCol = [47, 54, 64];
+            mutedCol = [113, 128, 147];
+            borderCol = [220, 221, 225];
+        } else if (palette === 'theme-mint') {
+            bgCol = [232, 248, 245];
+            boxCol = [255, 255, 255];
+            subBoxCol = [240, 250, 248];
+            accentCol = [22, 160, 133];
+            textCol = [17, 122, 101];
+            mutedCol = [72, 201, 176];
+            borderCol = [163, 228, 215];
+        } else if (palette === 'theme-solar') {
+            bgCol = [254, 249, 231];
+            boxCol = [255, 255, 255];
+            subBoxCol = [254, 252, 243];
+            accentCol = [212, 172, 13];
+            textCol = [125, 102, 8];
+            mutedCol = [180, 150, 20];
+            borderCol = [249, 231, 159];
+        } else if (palette === 'theme-sky') {
+            bgCol = [235, 245, 251];
+            boxCol = [255, 255, 255];
+            subBoxCol = [245, 250, 254];
+            accentCol = [41, 128, 185];
+            textCol = [27, 79, 114];
+            mutedCol = [93, 173, 226];
+            borderCol = [174, 214, 241];
+        }
+
+        doc.setFillColor(bgCol[0], bgCol[1], bgCol[2]);
+        doc.rect(0, 0, 210, 297, "F");
+
+        doc.setLineWidth(0.8);
+        doc.setDrawColor(borderCol[0], borderCol[1], borderCol[2]);
+        doc.rect(8, 8, 194, 281);
+
+        doc.setFillColor(boxCol[0], boxCol[1], boxCol[2]);
+        doc.rect(8, 8, 194, 24, "F");
+        doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("SIMULADOR TERAPEUTICO DEL TIO NEPOMUCENO — REPORTE", 105, 23, { align: "center" });
+
+        doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+        doc.setFontSize(14);
+        doc.text("SIMULACION METABOLICA AVANZADA", 105, 42, { align: "center" });
+
+        doc.setFontSize(8.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(mutedCol[0], mutedCol[1], mutedCol[2]);
+        doc.text("Protocolo Clínico Estrictamente No Lucrativo", 105, 48, { align: "center" });
+
+        doc.setFillColor(subBoxCol[0], subBoxCol[1], subBoxCol[2]);
+        doc.setLineWidth(0.4);
+        doc.setDrawColor(borderCol[0], borderCol[1], borderCol[2]);
+        doc.roundedRect(15, 55, 180, 44, 3, 3, "FD");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
+        doc.text("DATOS DE LA CONSULTA Y GASTO ENERGETICO", 20, 63);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+        doc.text("- Fecha de Emision: " + sim.date, 20, 71);
+        doc.text("- Felino: " + sim.name + " (" + sim.years + " anos y " + sim.months + " meses) | Peso: " + sim.weight + " kg", 20, 78);
+        doc.text("- Nivel de Actividad: " + sim.activity, 20, 85);
+        doc.text("- Proteina Base / Condicion: " + sim.protein + " | " + sim.symptom, 20, 92);
+
+        doc.setFillColor(subBoxCol[0], subBoxCol[1], subBoxCol[2]);
+        doc.setDrawColor(accentCol[0], accentCol[1], accentCol[2]);
+        doc.roundedRect(15, 103, 180, 20, 2, 2, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
+        doc.text("Porcion Alimento: " + sim.totalDailyGrams + " g", 20, 111);
+        doc.text("Hidratacion Sugerida: " + sim.totalWaterMl + " ml/dia", 110, 111);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+        doc.text("Menu Terapéutico Específico y Porciones:", 15, 134);
+
+        doc.setFillColor(boxCol[0], boxCol[1], boxCol[2]);
+        doc.setDrawColor(borderCol[0], borderCol[1], borderCol[2]);
+        doc.roundedRect(15, 139, 180, 65, 3, 3, "FD");
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+        let cleanMenu = sim.specificMenu.replace(/<strong>/g, '').replace(/<\/strong>/g, '').replace(/<br>/g, '\n');
+        doc.text(cleanMenu, 20, 149, { maxWidth: 170 });
+
+
+        let vetNotes = document.getElementById('vetNotesInput').value.trim();
+        if(vetNotes) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
+            doc.text("Indicaciones y Notas Clínicas del Veterinario:", 15, 215);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+            doc.text(vetNotes, 15, 222, { maxWidth: 180 });
+        }
+
+        doc.setFontSize(7.5);
+        doc.setTextColor(mutedCol[0], mutedCol[1], mutedCol[2]);
+        doc.text("Referencias APA: Case et al. (2011) | FEDIAF (2021) | NRC (2006) | Zoran (2002)", 105, 268, { align: "center" });
+        doc.text("Documento generado por el Simulador Terapéutico del Tío Nepomuceno.", 105, 274, { align: "center" });
+
+        return doc.output('blob');
+    }
+
+    function downloadSimulationPDF() {
+        if(!currentSimulation.name) {
+            alert('Primero realiza un cálculo en el simulador.');
+            return;
+        }
+        const blob = generatePDFBlob(currentSimulation);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "Reporte_Tio_Nepomuceno_" + currentSimulation.name + ".pdf";
+        a.click();
+    }
+</script>
+
+</body>
+</html>
