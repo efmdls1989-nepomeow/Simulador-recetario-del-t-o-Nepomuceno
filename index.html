@@ -270,7 +270,7 @@
         </svg>
     </div>
 
-    <h1 id="mainTitle">🐱⚡ Simulador Terapéutico del Tío Nepomuceno</h1>
+    <h1 id="mainTitle">🐱⚡ Simulador Terapéutico del Tio Nepomuceno</h1>
     <div class="subtitle" id="mainSub">Versión 12 — Precisión Metabólica, Costos, Guía de Cuidados y Redes</div>
     
     <div class="disclaimer" id="disclaimerBox">
@@ -426,7 +426,11 @@
                     <input type="time" id="mealTimerInput" class="lang-box" style="flex: 1;">
                     <button class="music-btn" type="button" onclick="setMealAlarm()" style="padding: 8px 12px; font-size: 0.9em;">🔔 Activar</button>
                 </div>
-                <div id="alarmStatus" style="font-size: 0.85em; color: #55efc4;"></div>
+                <div id="alarmStatus" style="font-size: 0.85em; color: #55efc4; margin-bottom: 8px;"></div>
+                <!-- BOTÓN DE ALARMA POR WHATSAPP -->
+                <button class="music-btn" type="button" onclick="enviarAlarmaWhatsApp()" style="background: #25D366; color: #fff; width: 100%; font-size: 0.9em; padding: 8px;">
+                    📱 Enviar Alarma por WhatsApp
+                </button>
             </div>
         </div>
 
@@ -555,7 +559,7 @@
         es: {
             lblPalette: "🎨 Paleta:",
             lblLang: "Idioma:",
-            mainTitle: "🐱⚡ Simulador Terapéutico del Tío Nepomuceno",
+            mainTitle: "🐱⚡ Simulador Terapéutico del Tio Nepomuceno",
             mainSub: "Versión 12 — Precisión Metabólica, Costos, Guía de Cuidados y Redes",
             disclaimer: "⚠️ Aviso Clínico: Herramienta avanzada de apoyo nutricional y simulación metabólica. No sustituye la valoración veterinaria presencial."
         }
@@ -660,8 +664,26 @@
 
     function shareOnWhatsApp() {
         playHappyMeow();
-        const text = encodeURIComponent("¡Hola! Te comparto el Simulador Terapéutico del Tío Nepomuceno 🐱, una herramienta web excelente para calcular porciones de comida, hidratación y cuidados felinos con base científica. Pruébalo aquí: " + window.location.href);
+        const text = encodeURIComponent("¡Hola! Te comparto el Simulador Terapéutico del Tio Nepomuceno 🐱, una herramienta web excelente para calcular porciones de comida, hidratación y cuidados felinos con base científica. Pruébalo aquí: " + window.location.href);
         window.open("https://api.whatsapp.com/send?text=" + text, "_blank");
+    }
+
+    function enviarAlarmaWhatsApp() {
+        playHappyMeow();
+        let nombreMichi = document.getElementById('iName').value || "Neo";
+        let pesoMichi = document.getElementById('iWeight').value || "4.5";
+        let porcionTotal = currentSimulation.totalDailyGrams ? currentSimulation.totalDailyGrams + "g" : "Calculado en app";
+        let horaAlarmaInput = document.getElementById('mealTimerInput').value || "No especificada";
+
+        let textoMensaje = `🚨 *ALARMA Y RECORDATORIO - TÍO NEPOMUCENO* 🚨%0A%0A` +
+                           `🐱 *Paciente:* ${nombreMichi}%0A` +
+                           `⚖️ *Peso:* ${pesoMichi} kg%0A` +
+                           `🍲 *Porción Sugerida:* ${porcionTotal}%0A` +
+                           `⏰ *Hora Programada:* ${horaAlarmaInput}%0A%0A` +
+                           `_Generado desde el Simulador Terapéutico v12_`;
+
+        let urlWhatsApp = `https://api.whatsapp.com/send?text=${textoMensaje}`;
+        window.open(urlWhatsApp, '_blank');
     }
 
     function copyShareLink() {
@@ -707,7 +729,7 @@
         const container = document.getElementById('weightHistoryList');
         if(history.length === 0) { container.innerHTML = '<span style="color: #718093;">Sin registros de peso.</span>'; return; }
         let html = '<ul style="margin: 0; padding-left: 20px;">';
-        history.forEach(item => { html += `<li>📅 ${item.date} — <strong>${item.weight} kg</strong></li>`; });
+        history.forEach(item => { html += `📅 ${item.date} — <strong>${item.weight} kg</strong><br>`; });
         html += '</ul>';
         container.innerHTML = html;
     }
@@ -908,47 +930,4 @@
         doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
         doc.text("- Fecha: " + sim.date, 20, 66);
         doc.text("- Felino: " + sim.name + " (" + sim.years + "a " + sim.months + "m) | Peso: " + sim.weight + " kg", 20, 73);
-        doc.text("- Actividad: " + sim.activity + " | Condición: " + sim.symptom, 20, 80);
-        doc.text("- Proteina Base: " + sim.protein, 20, 87);
-
-        doc.setFillColor(subBoxCol[0], subBoxCol[1], subBoxCol[2]); doc.roundedRect(15, 98, 180, 18, 2, 2, "FD");
-        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
-        doc.text("Porcion: " + sim.totalDailyGrams + " g/dia", 20, 109);
-        doc.text("Hidratacion: " + sim.totalWaterMl + " ml/dia", 110, 109);
-
-        doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
-        doc.text("Menu Terapéutico y Porciones:", 15, 126);
-
-        doc.setFillColor(boxCol[0], boxCol[1], boxCol[2]); doc.roundedRect(15, 131, 180, 55, 3, 3, "FD");
-        doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
-        let cleanMenu = sim.specificMenu.replace(/<strong>/g, '').replace(/<\/strong>/g, '').replace(/<br>/g, '\n');
-        doc.text(cleanMenu, 20, 141, { maxWidth: 170 });
-
-        let vetNotes = document.getElementById('vetNotesInput').value.trim();
-        if(vetNotes) {
-            doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
-            doc.text("Notas Clínicas del Veterinario:", 15, 196);
-            doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
-            doc.text(vetNotes, 15, 203, { maxWidth: 180 });
-        }
-
-        doc.setFontSize(7.5); doc.setTextColor(mutedCol[0], mutedCol[1], mutedCol[2]);
-        doc.text("Referencias APA: Case et al. (2011) | FEDIAF (2021) | NRC (2006) | Zoran (2002)", 105, 268, { align: "center" });
-        doc.text("Simulador Terapéutico del Tío Nepomuceno - v12.", 105, 274, { align: "center" });
-
-        return doc.output('blob');
-    }
-
-    function downloadSimulationPDF() {
-        if(!currentSimulation.name) { alert('Realiza un cálculo primero.'); return; }
-        const blob = generatePDFBlob(currentSimulation);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "Reporte_Tio_Nepomuceno_v12_" + currentSimulation.name + ".pdf";
-        a.click();
-    }
-</script>
-
-</body>
-</html>
+        doc.text("- Actividad: " + sim.activity + " | Condición: " + sim
