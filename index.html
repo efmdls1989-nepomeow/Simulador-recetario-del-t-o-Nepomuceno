@@ -533,6 +533,19 @@
 </div>
 
 <script>
+    // Sistema seguro de almacenamiento para evitar bloqueos por privacidad o modo incógnito
+    const safeStorage = {
+        getItem: function(key) {
+            try { return localStorage.getItem(key); } catch(e) { return null; }
+        },
+        setItem: function(key, val) {
+            try { localStorage.setItem(key, val); } catch(e) {}
+        },
+        removeItem: function(key) {
+            try { localStorage.removeItem(key); } catch(e) {}
+        }
+    };
+
     let currentSimulation = {};
     let ambientCtx = null;
     let ambientInterval = null;
@@ -709,9 +722,9 @@
         playHappyMeow();
         const w = parseFloat(document.getElementById('historyWeightInput').value);
         if(!w || isNaN(w)) { alert('Ingresa un peso válido.'); return; }
-        let history = JSON.parse(localStorage.getItem('cat_weight_history_v12') || '[]');
+        let history = JSON.parse(safeStorage.getItem('cat_weight_history_v12') || '[]');
         history.push({date: new Date().toLocaleDateString(), weight: w});
-        localStorage.setItem('cat_weight_history_v12', JSON.stringify(history));
+        safeStorage.setItem('cat_weight_history_v12', JSON.stringify(history));
         renderWeightHistory();
         document.getElementById('historyWeightInput').value = '';
     }
@@ -719,17 +732,17 @@
     function clearWeightHistory() {
         playHappyMeow();
         if(confirm('¿Deseas borrar el historial?')) {
-            localStorage.removeItem('cat_weight_history_v12');
+            safeStorage.removeItem('cat_weight_history_v12');
             renderWeightHistory();
         }
     }
 
     function renderWeightHistory() {
-        let history = JSON.parse(localStorage.getItem('cat_weight_history_v12') || '[]');
+        let history = JSON.parse(safeStorage.getItem('cat_weight_history_v12') || '[]');
         const container = document.getElementById('weightHistoryList');
         if(history.length === 0) { container.innerHTML = '<span style="color: #718093;">Sin registros de peso.</span>'; return; }
         let html = '<ul style="margin: 0; padding-left: 20px;">';
-        history.forEach(item => { html += `📅 ${item.date} — <strong>${item.weight} kg</strong><br>`; });
+        history.forEach(item => { html += `<li>📅 ${item.date} — <strong>${item.weight} kg</strong></li>`; });
         html += '</ul>';
         container.innerHTML = html;
     }
@@ -774,15 +787,15 @@
             protein: document.getElementById('iProtein').value, symptom: document.getElementById('iSymptom').value,
             fruit: document.getElementById('iFruit').value
         };
-        let profiles = JSON.parse(localStorage.getItem('cat_profiles_v12') || '{}');
+        let profiles = JSON.parse(safeStorage.getItem('cat_profiles_v12') || '{}');
         profiles[name] = profile;
-        localStorage.setItem('cat_profiles_v12', JSON.stringify(profiles));
+        safeStorage.setItem('cat_profiles_v12', JSON.stringify(profiles));
         updateProfileSelect();
         alert(`¡Perfil de ${name} guardado!`);
     }
 
     function updateProfileSelect() {
-        let profiles = JSON.parse(localStorage.getItem('cat_profiles_v12') || '{}');
+        let profiles = JSON.parse(safeStorage.getItem('cat_profiles_v12') || '{}');
         const sel = document.getElementById('profileSelect');
         sel.innerHTML = '<option value="">Cargar perfil...</option>';
         for(let key in profiles) sel.innerHTML += `<option value="${key}">${key}</option>`;
@@ -792,7 +805,7 @@
         playHappyMeow();
         const name = document.getElementById('profileSelect').value;
         if(!name) return;
-        let profiles = JSON.parse(localStorage.getItem('cat_profiles_v12') || '{}');
+        let profiles = JSON.parse(safeStorage.getItem('cat_profiles_v12') || '{}');
         const p = profiles[name];
         if(p) {
             document.getElementById('iName').value = p.name;
@@ -836,12 +849,12 @@
         playHappyMeow();
         const stock = document.getElementById('pantryStockInput').value;
         if(!stock) return;
-        localStorage.setItem('cat_pantry_stock_v12', stock);
+        safeStorage.setItem('cat_pantry_stock_v12', stock);
         document.getElementById('pantryStatus').innerText = `Stock registrado: ${stock} kg`;
         document.getElementById('pantryStockInput').value = '';
     }
     window.addEventListener('DOMContentLoaded', () => {
-        const s = localStorage.getItem('cat_pantry_stock_v12');
+        const s = safeStorage.getItem('cat_pantry_stock_v12');
         if(s) document.getElementById('pantryStatus').innerText = `Stock registrado: ${s} kg`;
     });
 
@@ -930,4 +943,47 @@
         doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
         doc.text("- Fecha: " + sim.date, 20, 66);
         doc.text("- Felino: " + sim.name + " (" + sim.years + "a " + sim.months + "m) | Peso: " + sim.weight + " kg", 20, 73);
-        doc.text("- Actividad: " + sim.activity + " | Condición: " + sim
+        doc.text("- Actividad: " + sim.activity + " | Condición: " + sim.symptom, 20, 80);
+        doc.text("- Proteina Base: " + sim.protein, 20, 87);
+
+        doc.setFillColor(subBoxCol[0], subBoxCol[1], subBoxCol[2]); doc.roundedRect(15, 98, 180, 18, 2, 2, "FD");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
+        doc.text("Porcion: " + sim.totalDailyGrams + " g/dia", 20, 109);
+        doc.text("Hidratacion: " + sim.totalWaterMl + " ml/dia", 110, 109);
+
+        doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+        doc.text("Menu Terapéutico y Porciones:", 15, 126);
+
+        doc.setFillColor(boxCol[0], boxCol[1], boxCol[2]); doc.roundedRect(15, 131, 180, 55, 3, 3, "FD");
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+        let cleanMenu = sim.specificMenu.replace(/<strong>/g, '').replace(/<\/strong>/g, '').replace(/<br>/g, '\n');
+        doc.text(cleanMenu, 20, 141, { maxWidth: 170 });
+
+        let vetNotes = document.getElementById('vetNotesInput').value.trim();
+        if(vetNotes) {
+            doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(accentCol[0], accentCol[1], accentCol[2]);
+            doc.text("Notas Clínicas del Veterinario:", 15, 196);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(textCol[0], textCol[1], textCol[2]);
+            doc.text(vetNotes, 15, 203, { maxWidth: 180 });
+        }
+
+        doc.setFontSize(7.5); doc.setTextColor(mutedCol[0], mutedCol[1], mutedCol[2]);
+        doc.text("Referencias APA: Case et al. (2011) | FEDIAF (2021) | NRC (2006) | Zoran (2002)", 105, 268, { align: "center" });
+        doc.text("Simulador Terapéutico del Tio Nepomuceno - v12.", 105, 274, { align: "center" });
+
+        return doc.output('blob');
+    }
+
+    function downloadSimulationPDF() {
+        if(!currentSimulation.name) { alert('Realiza un cálculo primero.'); return; }
+        const blob = generatePDFBlob(currentSimulation);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "Reporte_Tio_Nepomuceno_v12_" + currentSimulation.name + ".pdf";
+        a.click();
+    }
+</script>
+
+</body>
+</html>
